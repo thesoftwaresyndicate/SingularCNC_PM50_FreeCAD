@@ -1,12 +1,12 @@
- ____    __                               __      __             __  __              ______                                                                 
-/\  _`\ /\ \__                 __        /\ \    /\ \__         /\ \/\ \            /\  _  \                                                                
-\ \,\L\_\ \ ,_\  _ __    __   /\_\     __\ \ \___\ \ ,_\        \ \ \ \ \  _____    \ \ \L\ \     __   _ __   ___     ____  _____      __      ___     __   
- \/_\__ \\ \ \/ /\`'__\/'__`\ \/\ \  /'_ `\ \  _ `\ \ \/  _______\ \ \ \ \/\ '__`\   \ \  __ \  /'__`\/\`'__\/ __`\  /',__\/\ '__`\  /'__`\   /'___\ /'__`\ 
-   /\ \L\ \ \ \_\ \ \//\ \L\.\_\ \ \/\ \L\ \ \ \ \ \ \ \_/\______\\ \ \_\ \ \ \L\ \   \ \ \/\ \/\  __/\ \ \//\ \L\ \/\__, `\ \ \L\ \/\ \L\.\_/\ \__//\  __/ 
-   \ `\____\ \__\\ \_\\ \__/.\_\\ \_\ \____ \ \_\ \_\ \__\/______/ \ \_____\ \ ,__/    \ \_\ \_\ \____\\ \_\\ \____/\/\____/\ \ ,__/\ \__/.\_\ \____\ \____\
-    \/_____/\/__/ \/_/ \/__/\/_/ \/_/\/___L\ \/_/\/_/\/__/          \/_____/\ \ \/      \/_/\/_/\/____/ \/_/ \/___/  \/___/  \ \ \/  \/__/\/_/\/____/\/____/
-                                       /\____/                               \ \_\                                            \ \_\                         
-                                       \_/__/                                 \/_/                                             \/_/                         
+# ____    __                               __      __             __  __              ______                                                                 
+#/\  _`\ /\ \__                 __        /\ \    /\ \__         /\ \/\ \            /\  _  \                                                                
+#\ \,\L\_\ \ ,_\  _ __    __   /\_\     __\ \ \___\ \ ,_\        \ \ \ \ \  _____    \ \ \L\ \     __   _ __   ___     ____  _____      __      ___     __   
+# \/_\__ \\ \ \/ /\`'__\/'__`\ \/\ \  /'_ `\ \  _ `\ \ \/  _______\ \ \ \ \/\ '__`\   \ \  __ \  /'__`\/\`'__\/ __`\  /',__\/\ '__`\  /'__`\   /'___\ /'__`\ 
+#   /\ \L\ \ \ \_\ \ \//\ \L\.\_\ \ \/\ \L\ \ \ \ \ \ \ \_/\______\\ \ \_\ \ \ \L\ \   \ \ \/\ \/\  __/\ \ \//\ \L\ \/\__, `\ \ \L\ \/\ \L\.\_/\ \__//\  __/ 
+#   \ `\____\ \__\\ \_\\ \__/.\_\\ \_\ \____ \ \_\ \_\ \__\/______/ \ \_____\ \ ,__/    \ \_\ \_\ \____\\ \_\\ \____/\/\____/\ \ ,__/\ \__/.\_\ \____\ \____\
+#    \/_____/\/__/ \/_/ \/__/\/_/ \/_/\/___L\ \/_/\/_/\/__/          \/_____/\ \ \/      \/_/\/_/\/____/ \/_/ \/___/  \/___/  \ \ \/  \/__/\/_/\/____/\/____/
+#                                       /\____/                               \ \_\                                            \ \_\                         
+#                                       \_/__/                                 \/_/                                             \/_/                         
 
 # ***************************************************************************
 # *   Original Author Credit (c) sliptonic (shopinthewoods@gmail.com) 2018  *
@@ -45,16 +45,16 @@ from PathScripts import PathUtils
 TOOLTIP = '''
 This is a postprocessor file for the Path workbench. It is used to
 take a pseudo-gcode fragment outputted by a Path object, and output
-real GCode suitable for a jtech photonics laser. This postprocessor, once placed
+real GCode suitable for a SingularCNC PM50 Plasma Cutter. This postprocessor, once placed
 in the appropriate PathScripts folder, can be used directly from inside
 FreeCAD, via the GUI importer or via python scripts with:
-import jtech_post
-jtech_post.export(object,"/path/to/file.ngc","")
+import PM50_post
+PM50_post.export(object,"/path/to/file.nc","")
 '''
 
 now = datetime.datetime.now()
 
-parser = argparse.ArgumentParser(prog='jtech', add_help=False)
+parser = argparse.ArgumentParser(prog='PM50', add_help=False)
 parser.add_argument('--no-header', action='store_true', help='suppress header output')
 parser.add_argument('--no-comments', action='store_true', help='suppress comment output')
 parser.add_argument('--line-numbers', action='store_true', help='prefix with line numbers')
@@ -65,7 +65,7 @@ parser.add_argument('--postamble', help='set commands to be issued after the las
 parser.add_argument('--inches', action='store_true', help='Convert output for US imperial mode (G20)')
 parser.add_argument('--modal', action='store_true', help='Output the Same G-command Name USE NonModal Mode')
 parser.add_argument('--axis-modal', action='store_true', help='Output the Same Axis Value Mode')
-#parser.add_argument('--power-max', help='set the max value for laser power default=255')
+#parser.add_argument('--power-max', help='set the max value for plasma power default=255')
 parser.add_argument('--power-on-delay', default='600', help='milliseconds - Add a delay after laser on before moving to pre-heat material. Default=0')
 
 
@@ -82,12 +82,12 @@ COMMAND_SPACE = " "
 LINENR = 100  # line number starting value
 
 # These globals will be reflected in the Machine configuration of the project
-UNITS = "G21"  # G21 for metric, G20 for us standard
-UNIT_SPEED_FORMAT = 'mm/min'
-UNIT_FORMAT = 'mm'
+UNITS = "G20"  # G21 for metric, G20 for us standard
+UNIT_SPEED_FORMAT = 'in/min'
+UNIT_FORMAT = 'in'
 
-MACHINE_NAME = "JTECH Photonic Laser"
-PRECISION = 3
+MACHINE_NAME = "SingularCNC PM50 Plasma Cutter"
+PRECISION = 4
 
 # Preamble text will appear at the beginning of the GCODE output file.
 PREAMBLE = '''M05 S0
@@ -99,7 +99,10 @@ POSTAMBLE = '''M05 S0
 M2
 '''
 
-PRE_FEED = '''M03
+PRE_FEED = '''
+G31 Z-100. F39.
+G92 Z-0.39
+M03
 G4 P{}
 '''
 
@@ -154,11 +157,6 @@ def processArguments(argstring):
             PREAMBLE = args.preamble
         if args.postamble is not None:
             POSTAMBLE = args.postamble
-        if args.inches:
-            UNITS = 'G20'
-            UNIT_SPEED_FORMAT = 'in/min'
-            UNIT_FORMAT = 'in'
-            PRECISION = 4
         if args.modal:
             MODAL = True
         if args.axis_modal:
@@ -183,12 +181,12 @@ def export(objectslist, filename, argstring):
             print("the object " + obj.Name + " is not a path. Please select only path and Compounds.")
             return None
 
-    print("postprocessing...")
+    print("Generating Machine Code...")
     gcode = ""
 
     # write header
     if OUTPUT_HEADER:
-        gcode += linenumber() + "(Exported by FreeCAD)\n"
+        gcode += linenumber() + "(Exported by SingularCNC PM50 Plugin for FreeCAD)\n"
         gcode += linenumber() + "(Post Processor: " + __name__ + ")\n"
         gcode += linenumber() + "(Output Time:" + str(now) + ")\n"
 
@@ -232,7 +230,7 @@ def export(objectslist, filename, argstring):
     else:
         final = gcode
 
-    print("done postprocessing.")
+    print("Machine Code Ready!")
 
     if not filename == '-':
         gfile = pythonopen(filename, "wb")
@@ -267,7 +265,7 @@ def parse(pathobj):
     RAPID_MOVES = ["G0", "G00"]
     FEED_MOVES = ["G1", "G01", "G2", "G02", "G3", "G03"]
     # the order of parameters
-    params = ['X', 'Y', 'Z', 'A', 'B', 'C', 'I', 'J', 'F', 'S', 'T', 'Q', 'R', 'L', 'H', 'D', 'P']
+    params = ['X', 'Y', 'A', 'B', 'C', 'I', 'J', 'F', 'S', 'T', 'Q', 'R', 'L', 'H', 'D', 'P']
     firstmove = Path.Command("G0", {"X": -1, "Y": -1, "Z": -1, "F": 0.0})
     currLocation.update(firstmove.Parameters)  # set First location Parameters
 
@@ -334,14 +332,6 @@ def parse(pathobj):
             lastcommand = command
             currLocation.update(c.Parameters)
 
-            # Check for Tool Change:
-            if command == 'M6':
-                continue
-                # if OUTPUT_COMMENTS:
-                #     out += linenumber() + "(begin toolchange)\n"
-                for line in TOOL_CHANGE.splitlines(True):
-                    out += linenumber() + line
-
             if command == "message":
                 if OUTPUT_COMMENTS is False:
                     out = []
@@ -360,4 +350,4 @@ def parse(pathobj):
 
         return out
 
-print(__name__ + " gcode postprocessor loaded.")
+print(__name__ + ": Driver Loaded Successfully!")
